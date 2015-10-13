@@ -1,38 +1,56 @@
 package com.devworms.ejemplo.splash;
 
-import android.support.v7.app.ActionBarActivity;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.support.v4.app.FragmentActivity;
 
+/**
+ * Created by DevWorms S.A. de C.V. on 12/10/15.
+ */
+public class MainActivity extends FragmentActivity {
 
-public class MainActivity extends ActionBarActivity {
+    private static final long SPLASH_SCREEN_DELAY = 3000;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-    }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
+        // Hide action bar whereas the splash screen is visible
+        getActionBar().hide();
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (savedInstanceState == null) {
+            // Show the splash screen at the beginning
+            getFragmentManager().beginTransaction()
+                    .add(R.id.container, new SplashScreenFragment()).commit();
         }
 
-        return super.onOptionsItemSelected(item);
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+
+                // Replace the splash screen fragment to main fragment and
+                // specific animation resources to run for the fragments that
+                // are entering and exiting in this transaction.
+                getFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.container, new MainFragment()).commit();
+
+                // Show action bar when the main fragment is visible
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        getActionBar().show();
+                    }
+                });
+
+            }
+
+        };
+
+        // Simulate a long loading process on application startup.
+        Timer timer = new Timer();
+        timer.schedule(task, SPLASH_SCREEN_DELAY);
     }
 }
